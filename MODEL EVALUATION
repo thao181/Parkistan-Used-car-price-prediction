@@ -1,0 +1,62 @@
+import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns; sns.set()
+link='https://drive.google.com/file/d/1-1qDNJEAvqkBhl5yii8n7WxoeiJDlH7I/view'
+path = 'https://drive.google.com/uc?export=download&id='+link.split('/')[-2]
+dataset = pd.read_csv(path)
+# Check for missing values
+dataset.isnull().sum()
+dataset=dataset.dropna(subset=['engine_cc','price','color','body','year','fuel_type','assembly']) #Loại bỏ ký tự null
+object_cols = list(dataset.select_dtypes(['object']).columns)
+from string import punctuation
+# Chuyển các giá trị sang định lượng
+from sklearn import preprocessing
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+dataset[object_cols] = dataset[object_cols].apply(le.fit_transform)
+dataset
+le
+
+# Vẽ correlation
+import seaborn as sns
+plt.figure(figsize=(13, 8))import seaborn as sns
+plt.figure(figsize=(13, 8))
+sns.heatmap(dataset.corr(), annot=True, cmap='coolwarm')
+sns.heatmap(dataset.corr(), annot=True, cmap='coolwarm')
+#DROP COLUMN KHÔNG CÓ CORRELATION
+dataset.drop(columns=['year','assembly','ad_ref'], inplace = True)
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+scaler.fit(dataset)
+data_minmax = scaler.transform(dataset)
+
+dataset.reset_index(drop=True,inplace=True)
+dataset
+dataset[dataset.columns] = pd.DataFrame(data_minmax, columns = dataset.columns)
+dataset
+
+#LINEAR REGRESSION
+from sklearn.linear_model import LinearRegression
+dataset1=dataset
+from sklearn.model_selection import train_test_split
+X=dataset1.drop('price', axis = 1)
+y=dataset1[['price']]
+X_train, X_test, y_train, y_test=train_test_split(X,y,train_size=0.8,random_state=42)
+from sklearn import linear_model
+from sklearn.linear_model import LinearRegression
+
+model_lin=linear_model.LinearRegression()
+model_lin.fit(X_train, y_train)
+model_lin
+from sklearn.metrics import r2_score #tính R2
+
+y_pred = model_lin.predict(X_test)
+r2_score = r2_score(y_test, y_pred)
+r2_score
+print(r2_score)
+from sklearn.metrics import mean_squared_error #tính MSE
+
+y_pred = model_lin.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+mse
+print(mse)
